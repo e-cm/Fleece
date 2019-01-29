@@ -1,39 +1,20 @@
-// varaiables to hold the indexes of the the current and next image/video
+// varaiable to hold the index of the the current image/video
 int mediaFront = 0;
-int mediaBack = 1;
 
-// declare Movie objects that will hold the background videos
+// Movie object that will hold the background video
 Movie vidFront;
-Movie vidBack;
 
-// declare PImage objects that will hold the background images
+// PImage object that will hold the background image
 PImage imgFront;
-PImage imgBack;
 
 // variables used for changing background image
-int opacMedia = 255;
 boolean changing = false;
-int changeSpeed = 2;
-
-// arraylist that holds all the images/videos of the currently loaded package
-ArrayList medias = new ArrayList();
 
 
 // display the background media
 void displayBackground() {
   
-  // first, render the media that is next in queue
-  tint(255, 255);
-  if (medias.get(mediaBack) instanceof Movie) {
-    image(vidBack, 0, 0, width, height);
-  }
-  else {
-    imgBack = (PImage)medias.get(mediaBack);
-    image(imgBack, 0, 0, width, height);
-  }
-  
   // then, display the current media on top of it
-  tint(255, opacMedia); 
   if (medias.get(mediaFront) instanceof Movie) {
     image(vidFront, 0, 0, width, height);
   }
@@ -41,68 +22,37 @@ void displayBackground() {
     imgFront = (PImage)medias.get(mediaFront);
     image(imgFront, 0, 0, width, height);
   }
-  
-  // fade to the next image/video while the "changing" variable is true
-  if(changing) fadeTo();
 
 }
-
-
-
 
 
 // initiates the transiiton between the current background image/video and the next
-void change() {
+void change(int mode) {
   
-  // if the piece of media you're transitioning to is a video, start playing it;
-  if (medias.get(mediaBack) instanceof Movie) {
-    vidBack = (Movie)medias.get(mediaBack);
-    vidBack.loop();
+  if (!changing) {   
+      changing = true;
+      switch(mode) {
+      
+        case 1:
+          display_package[1] = packages[pseudoRandom(display_package[1].getIndex(), 0, packages.length/3 - 1)];
+          break;
+          
+        case 2:
+          display_package[1] = packages[pseudoRandom(display_package[1].getIndex(), packages.length/3, 2*packages.length/3 - 1)];
+          break;
+          
+        case 3:
+          display_package[1] = packages[pseudoRandom(display_package[1].getIndex(), 2*packages.length/3, packages.length - 1)];
+          break;
+      
+      }
+      
+      // load the new package
+      loadPackage(display_package[1]);     
+      changing = false;
   }
-  changing = true;
-}
-
-
-
-
-
-// fade between the current picture and the requested one
-void fadeTo() {
   
-  // fade to the back image at the requested speed
-  opacMedia -= changeSpeed;
-  
-  // when the front image has completely faded away
-  if (opacMedia <= 0) {
-    
-    // if the front piece of media was a video, stop playing it
-    if (medias.get(mediaFront) instanceof Movie) {
-      vidFront.stop();
-    }
-    
-    // move to the next piece of media for both front and back
-    mediaFront = ((mediaFront + 1) % medias.size());
-    mediaBack = ((mediaBack + 1) % medias.size());
-    
-    // if either the new front or back is video, assign it to the appropriate variable
-    if (medias.get(mediaFront) instanceof Movie) {
-      vidFront = (Movie)medias.get(mediaFront);
-    }
-    if (medias.get(mediaBack) instanceof Movie) {
-      vidBack = (Movie)medias.get(mediaBack);
-    }
-    
-    // reset the opacity
-    opacMedia = 255;
-    
-    // finishing transitioning
-    changing = false; 
-  }
 }
-
-
-
-
 
 // Called every time a new frame of video is available to read (renders the frame)
 void movieEvent(Movie m) {
